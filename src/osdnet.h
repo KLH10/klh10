@@ -309,6 +309,7 @@ struct pfdata {
 #define PF_METH_TUN		2
 #define PF_METH_TAP		3
 #define PF_METH_VDE		4
+#define PF_METH_LNX		5
 
 int osn_iftab_init(void);
 int osn_nifents(void);		/* # of entries cached by osn_iftab_init */

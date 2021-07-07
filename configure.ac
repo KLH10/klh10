@@ -55,6 +55,22 @@ case "${enable_lights}" in
 esac
 
 # -------------------------------------------------------------------------
+# Check whether we want LNX support
+# -------------------------------------------------------------------------
+
+AC_ARG_ENABLE(lnx,
+    AS_HELP_STRING([--enable-lnx],[enable lnx networking (default on) when it cannot be found]))
+
+case "${with_lnx}" in
+    yes | "") 
+	 AC_DEFINE(KLH10_NET_LNX, 1, [Set to 0 to enable LNX networking])
+	 AC_MSG_NOTICE([Compiling with LNX support]) ;;
+    no)  AC_DEFINE(KLH10_NET_LNX, 0, [Set to 0 to disable LNX networking])
+	 AC_MSG_NOTICE([Compiling without LNX support]) ;;
+    *)   AC_MSG_ERROR([bad value ${enable_lnx} for --enable-lnx]) ;;
+esac
+
+# -------------------------------------------------------------------------
 # Check whether we want VDE support
 # -------------------------------------------------------------------------
 

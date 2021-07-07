@@ -52,6 +52,9 @@
 struct ifent *osn_iflookup(char *ifnam);
 static struct ifent *osn_iftab_addaddress(char *name, struct sockaddr *addr, struct sockaddr *mask);
 
+#if KLH10_NET_LNX
+static void osn_pfinit_lnx(struct pfdata *pfdata, struct osnpf *osnpf, void *pfarg);
+#endif /* KLH10_NET_LNX */
 #if KLH10_NET_PCAP
 static void osn_pfinit_pcap(struct pfdata *pfdata, struct osnpf *osnpf, void *pfarg);
 static ssize_t osn_pfread_pcap(struct pfdata *pfdata, void *buf, size_t nbytes);
@@ -101,6 +104,9 @@ char osn_networking[] =
 #endif
 #if KLH10_NET_VDE
     " vde"
+#endif
+#if KLH10_NET_LNX
+    " lnx"
 #endif
     ;
 
@@ -1410,6 +1416,12 @@ osn_pfinit(struct pfdata *pfdata, struct osnpf *osnpf, void *pfarg)
 	return osn_pfinit_vde(pfdata, osnpf, pfarg);
     }
 #endif /* KLH10_NET_VDE */
+#if KLH10_NET_LNX
+    if (!method[0] || !strcmp(method, "lnx")) {
+	pfdata->pf_meth = PF_METH_LNX;
+	return osn_pfinit_lnx(pfdata, osnpf, pfarg);
+    }
+#endif /* KLH10_NET_LNX */
 
     esfatal(1, "Interface method \"%s\" not supported (only%s)",
 	    method, osn_networking);
@@ -1433,6 +1445,96 @@ osn_pfdeinit(struct pfdata *pfdata, struct osnpf *osnpf)
     if (pfdata->pf_deinit)
 	pfdata->pf_deinit(pfdata, osnpf);
 }
+
+#if KLH10_NET_LNX
+
+/*
+  The Linux PF_PACKET interface is described to some extent
+  by the packet(7) man page.
+
+  Linux provides no kernel packet filtering mechanism other than
+  possibly a check on the ethernet protocol type, but this is useless
+  for us since we'll always want to check for more than just one type;
+  e.g. IP and ARP, plus possibly 802.3 or DECNET packets.
+
+  From the man page for packet(7):
+       By  default all packets of the specified protocol type are
+       passed to a packet socket. To only get packets from a spe-
+       cific  interface  use  bind(2)  specifying an address in a
+       struct sockaddr_ll to bind the packet socket to an  inter-
+       face.  Only  the  sll_protocol and the sll_ifindex address
+       fields are used for purposes of binding.
+ */
+void
+osn_pfinit_lnx(struct pfdata *pfdata, struct osnpf *osnpf, void *pfarg)
+{
+    int fd;
+    char *ifcname = osnpf->osnpf_ifnam;
+    struct ifreq ifr;
+
+    /* Open a socket of the desired type.
+     */
+    struct sockaddr_ll sll;
+    int ifx;
+
+    /* Get raw packets with ethernet headers
+     */
+    fd = socket(PF_PACKET, SOCK_RAW,
+#if 0 /*OSN_USE_IPONLY*/		/* If DPIMP or otherwise IP only */
+		htons(ETH_P_IP)		/* for IP only */
+#else
+		htons(ETH_P_ALL)	/* for everything */
+#endif
+		);
+    if (fd < 0)
+	esfatal(1, "Couldn't open packet socket");
+
+    if (!osnpf->osnpf_dedic) {
+      esfatal(1,"LNX ifmethod only works for dedicated interfaces");
+    }
+
+    /* Need ifc index in order to do binding, so get it. */
+    memset(&ifr, 0, sizeof(ifr));
+    strncpy(ifr.ifr_name, ifcname, sizeof(ifr.ifr_name));
+    if (ioctl(fd, SIOCGIFINDEX, &ifr) < 0 )
+	esfatal(1, "SIOCGIFINDEX of %s failed", ifcname);
+    ifx = ifr.ifr_ifindex;
+
+    /* Bind to proper device/interface using ifc index */
+    memset(&sll, 0, sizeof(sll));
+    sll.sll_family = AF_PACKET;
+    sll.sll_protocol = htons(ETH_P_ALL);
+    sll.sll_ifindex = ifx;
+    if (bind(fd, (struct sockaddr *)&sll, sizeof(sll)))
+	esfatal(1, "bind to %s failed", ifcname);
+
+    /* This code only works with Ethernet, so check for that */
+    memset(&ifr, 0, sizeof(ifr));
+    strncpy(ifr.ifr_name, ifcname, sizeof(ifr.ifr_name));
+    if (ioctl(fd, SIOCGIFHWADDR, &ifr) < 0 )
+	esfatal(1, "SIOCGIFHWADDR of %s failed", ifcname);
+
+    if (ifr.ifr_hwaddr.sa_family != ARPHRD_ETHER)
+	efatal(1, "%s is not an ethernet - ARPHRD type %d",
+	       ifcname, ifr.ifr_hwaddr.sa_family);
+
+    /* Finally, attempt to determine current ethernet MAC address.
+       Assume above call returned it in sa_data.
+     */
+    ea_set(&osnpf->osnpf_ea, &ifr.ifr_addr.sa_data[0]);
+
+    pfdata->pf_meth = PF_METH_LNX;
+    pfdata->pf_read = osn_pfread_fd;
+    pfdata->pf_write = osn_pfwrite_fd;
+    pfdata->pf_deinit = NULL;
+    pfdata->pf_handle = NULL;
+    pfdata->pf_can_filter = 0;
+    pfdata->pf_fd=fd;
+    return;
+}
+
+#endif /* KLH10_NET_LNX */
+
 
 #if KLH10_NET_PCAP
 static
