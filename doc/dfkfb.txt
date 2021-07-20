@@ -23,12 +23,12 @@ immediately run DFKFB without spending any time on installation or
 configuration, and get an idea of how it compares with a real KL.
 
 [1] Build a KN10-KL for your native platform.
-	$ cd <distrib>/bld/<platform>
-	$ make base-kl
+	$ cd <distrib>/tmp/bld-kl
+	$ make
 
 [2] Go to the DFKFB directory, if present, and run it.
 	$ cd ../../run/dfkfb
-	$ ../../bld/<platform>/kn10-kl dfkfb.ini
+	$ ../../tmp/bld-kl/kn10-kl dfkfb.ini
 
 [3] Compare output with other configurations, platforms, etc.
     Strut or sulk as appropriate.

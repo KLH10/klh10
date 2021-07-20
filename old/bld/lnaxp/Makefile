@@ -1,1 +1,0 @@
-../../src/Mk-lnaxp.mk

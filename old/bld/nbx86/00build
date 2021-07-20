@@ -1,4 +1,0 @@
-#!/bin/sh
-export KL10HOME=/scratch/tops20/emulators/panda-dist/i386
-make base-kl CONFFLAGS_AUX=-DKLH10_I_CIRC=1
-#make base-ks-its CONFFLAGS_AUX=-DKLH10_I_CIRC=1 
