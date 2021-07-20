@@ -1,5 +1,0 @@
-#!/bin/sh
-make base-kl CONFFLAGS_AUX=-DKLH10_I_CIRC=1
-# or
-# make base-ks CONFFLAGS_AUX=-DKLH10_I_CIRC=1
-# make base-ks-its CONFFLAGS_AUX=-DKLH10_I_CIRC=1

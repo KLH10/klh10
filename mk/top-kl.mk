@@ -19,7 +19,7 @@ CONFFLAGS = -DKLH10_CPU_KLX=1	\
 	    -DKLH10_APRID_SERIALNO=3600 \
 	    -DKLH10_CLIENT=\"MyKL\"
 
-all:	kn10-kl DPROCS_KL ALL_UTILS
+all base-kl:	kn10-kl DPROCS_KL ALL_UTILS
 
 ####################################################################
 ##
@@ -41,41 +41,6 @@ OFILES_KL = klh10.o prmstr.o fecmd.o feload.o wfio.o osdsup.o \
 
 kn10-kl: $(OFILES_KL)
 	$(LINKER) $(LDFLAGS) $(LDOUTF) kn10-kl $(OFILES_KL) $(LIBS) $(CPULIBS)
-
-####################################################################
-##	Specific KLH10 configurations
-##	
-##	Provided as a convenience, not intended to satisfy all
-##	possible platforms or configurations.
-
-# Standard setup for KL (TOPS-10 and TOPS-20)
-#
-base-kl:
-	$(MAKER) kn10-kl $(DPROCS_KL) $(BASE_UTILS) uexbconv \
-	    "SRC = $(SRC)" \
-	    "CC = $(CC)" \
-	    "CFLAGS = $(CFLAGS) $(CFLAGS_AUX)" \
-	    "CPPFLAGS = $(CPPFLAGS)" \
-	    "LDFLAGS = $(LDFLAGS)" \
-	    "LIBS = $(LIBS)" \
-	    "CPULIBS = $(CPULIBS)" \
-	    "NETLIBS = $(NETLIBS)" \
-	    "CENVFLAGS = $(CENVFLAGS)" \
-	    "CONFFLAGS = \
-		-DKLH10_CPU_KLX=1	\
-		-DKLH10_SYS_T20=1	\
-		-DKLH10_EVHS_INT=1	\
-			-DKLH10_DEV_DPNI20=1 \
-			-DKLH10_DEV_DPTM03=1 \
-			-DKLH10_DEV_DPRPXX=1 \
-		-DKLH10_MEM_SHARED=1	\
-		-DKLH10_RTIME_OSGET=1	\
-		-DKLH10_ITIME_INTRP=1	\
-		-DKLH10_CTYIO_INT=1	\
-		-DKLH10_APRID_SERIALNO=3600 \
-		-DKLH10_CLIENT=\\\"MyKL\\\" \
-		$(CONFFLAGS_AUX) \
-		$(CONFFLAGS_USR) "
 
 base-ks:
 	@echo "base-ks is not built in this directory."

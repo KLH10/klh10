@@ -53,6 +53,8 @@ for other ports such as MacOS or Windows have not yet been written.
 
 	$ mkdir tmp; cd tmp
 	$ ../configure --bindir=$KLH10_HOME
+    Or, if the configure script has not been created yet:
+	$ ../autogen.sh --bindir=$KLH10_HOME
 	$ make -C bld-kl
 	$ make -C bld-ks
 	$ make -C bld-ks-its
@@ -226,28 +228,32 @@ BUILDING FROM SOURCES
     characteristics. Normally no manual settings are needed.
 
     $ mkdir <some fresh directory>; cd <that same directory>
+
+        Usually the directory <distrib>/tmp is chosen for this.
+
     $ <distrib>/configure
+    
+	or, to create the configure script first,
+
+    $ <distrib>/autogen.sh
 
     This will generate 3 subdirectories with a Makefile in each.
-    They differ only in their default target, so that the different
+    They differ only in their model, so that the different
     models can easily be built independently.
 
 	Directory  Target      Builds this emulator
 	---------  ------      --------------------
-	bld-kl	   base-kl     kn10-kl     (KL10B - runs TOPS-10/20)
-	bld-ks	   base-ks     kn10-ks     (KS10  - runs TOPS-10/20)
-	bld-ks-its base-ks-its kn10-ks-its (KS10  - runs ITS)
+	bld-kl	   all         kn10-kl     (KL10B - runs TOPS-10/20)
+	bld-ks	   all         kn10-ks     (KS10  - runs TOPS-10/20)
+	bld-ks-its all         kn10-ks-its (KS10  - runs ITS)
 
-    The pre-configure build directories are also still there, but they
-    are no longer maintained, and do not cover all possible host
-    OS and CPU options. These are in <distrib>/bld/<os><cpu>.
 
 PORTING
 =======
 
-	If you are trying to build things on a platform with no
-readily applicable Makefile or "bld" subdirectory, you are essentially
-doing a new port.  Here are some guides.
+	If you are trying to build things on a platform where the
+configure script does not run successfully, you are essentially doing a
+new port.  This should be rare, but here are some ancient guides.
 
 [1] Unix systems are the easiest.  Mac has been done for the KS.
     A couple of people are eyeing a NT/W2K/XP port but it's not there yet.
@@ -265,11 +271,11 @@ doing a new port.  Here are some guides.
     appropriate CENV_SYS_xxx and CENV_CPU_xxx flags, and build the
     target "port-ks".
 
-[5] Once that works, move up to the target "base-ks".  This is more
+[5] Once that works, move up to the target "all" in bld-ks.  This is more
     complex but still avoids trying to build the networking code, which
     is the most unportable part.
 
-[6] Finally, try "base-kl" or "base-ks-its", either of which will try to
+[6] Finally, try "all" in bld-kl or bld-ks-its, either of which will try to
     build network code.  It's OK if the code doesn't actually work at
     first as long as it compiles, since you can still run the KN10
     whether the network device is up or down.
@@ -286,7 +292,9 @@ If you do need to fix or modify any of the sources, read this file:
 
 And please let me know about them!  You can send bug fixes or ideas,
 including suggestions for improving the current build & install
-process, to me at <klh@alum.mit.edu>.
+process, to me at <klh@alum.mit.edu>. For the current distribution,
+going to https://github.com/PDP-10/klh10 would be more useful.
+
 
 INSTALLING BINARIES
 ===================
@@ -338,9 +346,9 @@ As distributed, there are three base machines:
 
 	Target		CPU	uCode	Runs
 	------		---	-----	----
-	base-kl		KL10B	v.442	TOPS-10, TOPS-20
-	base-ks		KS10	v.130	TOPS-10, TOPS-20
-	base-ks-its	KS10	v.262	ITS
+	kn10-kl		KL10B	v.442	TOPS-10, TOPS-20
+	kn10-ks		KS10	v.130	TOPS-10, TOPS-20
+	kn10-ks-its	KS10	v.262	ITS
 
 The KL10B version provides emulation for the following:
 

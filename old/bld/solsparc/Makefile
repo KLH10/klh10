@@ -1,1 +1,0 @@
-../../src/Mk-solsparc.mk
